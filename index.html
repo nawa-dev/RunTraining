@@ -6,6 +6,10 @@
 
 <meta name="viewport" content="width=390, initial-scale=1, maximum-scale=1, user-scalable=no">
 
+<!-- Font Awesome -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
 <style>
 html, body {
     width: 390px;
@@ -57,6 +61,7 @@ button:active {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
 }
 
 .start { background: #22c55e; }
@@ -70,12 +75,13 @@ button:active {
     border: none;
     background: #3b82f6;
     color: white;
-    font-size: 30px;
+    font-size: 26px;
     margin: 16px auto;
 
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
 }
 
 .lap-item {
@@ -84,6 +90,7 @@ button:active {
     border-radius: 10px;
     margin: 6px 0;
     font-size: 16px;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -109,21 +116,29 @@ input {
 
 <body>
 
-<h2>🏃 Timer ซ้อมวิ่ง</h2>
+<h2><i class="fa-solid fa-person-running"></i> Timer ซ้อมวิ่ง</h2>
 
-<!-- 👇 เปลี่ยนเป็นเมตร -->
 <input id="distance" placeholder="ระยะทางต่อรอบ (เมตร) เช่น 400">
 
 <div class="time" id="display">00:00.00</div>
 
 <div class="row">
-    <button class="btn start" onclick="start()">▶ เริ่ม</button>
-    <button class="btn stop" onclick="stop()">⏸ หยุด</button>
-    <button class="btn reset" onclick="resetAll()">รีเซ็ต</button>
+    <button class="btn start" onclick="start()">
+        <i class="fa-solid fa-play"></i> เริ่ม
+    </button>
+
+    <button class="btn stop" onclick="stop()">
+        <i class="fa-solid fa-pause"></i> หยุด
+    </button>
+
+    <button class="btn reset" onclick="resetAll()">
+        <i class="fa-solid fa-rotate"></i> รีเซ็ต
+    </button>
 </div>
 
-<button class="lap-circle" onclick="lap()">นับรอบ</button>
-
+<button class="lap-circle" onclick="lap()">
+    <i class="fa-solid fa-stopwatch"></i> นับรอบ
+</button>
 
 <h3>รอบที่วิ่ง</h3>
 <div id="laps"></div>
@@ -137,7 +152,6 @@ let lastLapTime = 0;
 let lapCount = 0;
 let lapsData = [];
 
-/* กันกดซ้ำ */
 let lastPress = 0;
 function canPress() {
     const now = Date.now();
@@ -146,7 +160,6 @@ function canPress() {
     return true;
 }
 
-/* STORAGE */
 function save() {
     const data = {
         elapsed,
@@ -184,7 +197,6 @@ function load() {
     } catch(e) {}
 }
 
-/* UTIL */
 function format(t) {
     let ms = Math.floor((t % 1000) / 10);
     let s = Math.floor(t / 1000) % 60;
@@ -201,11 +213,10 @@ function vibrate() {
     if ("vibrate" in navigator) navigator.vibrate(40);
 }
 
-/* 👇 แก้สูตรให้รับ "เมตร" */
 function calcPace(timeMs, meter) {
     if (!meter || meter <= 0) return "-";
 
-    const km = meter / 1000;          // แปลงเป็นกิโล
+    const km = meter / 1000;
     let sec = timeMs / 1000;
     let paceSec = sec / km;
 
@@ -243,9 +254,7 @@ function lap() {
 
     vibrate();
 
-    /* 👇 รับเป็นเมตร */
     let distMeter = parseFloat(distance.value);
-
     let lapTime = elapsed - lastLapTime;
 
     lastLapTime = elapsed;
@@ -271,12 +280,12 @@ function renderLaps() {
         <div class="lap-item">
             <div>
                 <b>รอบที่ ${i.no}</b><br>
-                ⏱ ${format(i.lapTime)}<br>
-                🕒 ${format(i.total)}
+                <i class="fa-solid fa-stopwatch"></i> ${format(i.lapTime)}<br>
+                <i class="fa-solid fa-clock"></i> ${format(i.total)}
             </div>
 
             <div class="lap-pace">
-                ⚡ ${i.pace}<br>
+                <i class="fa-solid fa-bolt"></i> ${i.pace}<br>
                 <span style="font-size:14px">/km</span>
             </div>
         </div>
