@@ -5,32 +5,24 @@
 <title>Running Timer</title>
 
 <meta name="viewport" content="width=390, initial-scale=1, maximum-scale=1, user-scalable=no">
-<!-- ===== App Icon ===== -->
+
 <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
 
-<!-- สำหรับ Add to Home Screen iPhone -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Run Timer">
 
-<!-- Open Graph เวลาแชร์ลิงก์ -->
 <meta property="og:title" content="Run Timer">
 <meta property="og:image" content="icon.png">
 <meta property="og:type" content="website">
 
-<!-- Font Awesome -->
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
 <style>
-    html {
-    touch-action: manipulation;
-}
-
-body {
-    -webkit-touch-callout: none;
-}
+html { touch-action: manipulation; }
+body { -webkit-touch-callout: none; }
 
 html, body {
     width: 390px;
@@ -151,11 +143,10 @@ input {
     <button class="btn reset" onclick="resetAll()">
         <i class="fa-solid fa-rotate"></i> รีเซ็ต
     </button>
+
     <button class="btn start" onclick="start()">
         <i class="fa-solid fa-play"></i> เริ่ม
     </button>
-
-
 </div>
 
 <button class="lap-circle" onclick="lap()">
@@ -175,7 +166,8 @@ let lapCount = 0;
 let lapsData = [];
 
 let lastPress = 0;
-// ==== FIX iOS PRESS EFFECT ====
+
+// ==== EFFECT ปุ่มยุบ ====
 function addPressEffect(el) {
     el.addEventListener("touchstart", () => {
         el.style.transform = "scale(0.95)";
@@ -200,6 +192,7 @@ function addPressEffect(el) {
 
 document.querySelectorAll("button").forEach(addPressEffect);
 
+// ==== กันกดซ้ำ ====
 function canPress() {
     const now = Date.now();
     if (now - lastPress < 400) return false;
@@ -207,6 +200,7 @@ function canPress() {
     return true;
 }
 
+// ==== SAVE / LOAD ====
 function save() {
     const data = {
         elapsed,
@@ -244,6 +238,7 @@ function load() {
     } catch(e) {}
 }
 
+// ==== FORMAT TIME ====
 function format(t) {
     let ms = Math.floor((t % 1000) / 10);
     let s = Math.floor(t / 1000) % 60;
@@ -256,10 +251,12 @@ function format(t) {
     );
 }
 
+// ==== VIBRATE ====
 function vibrate() {
     if ("vibrate" in navigator) navigator.vibrate(40);
 }
 
+// ==== CALC PACE /km ====
 function calcPace(timeMs, meter) {
     if (!meter || meter <= 0) return "-";
 
@@ -273,6 +270,7 @@ function calcPace(timeMs, meter) {
     return m + ":" + String(s).padStart(2,'0');
 }
 
+// ==== TIMER ====
 function update() {
     elapsed = Date.now() - startTime;
     display.innerText = format(elapsed);
@@ -296,6 +294,7 @@ function stop() {
     save();
 }
 
+// ==== LAP ====
 function lap() {
     if (!canPress()) return;
 
@@ -322,6 +321,7 @@ function lap() {
     save();
 }
 
+// ==== RENDER ====
 function renderLaps() {
     laps.innerHTML = lapsData.map(i => `
         <div class="lap-item">
@@ -339,6 +339,7 @@ function renderLaps() {
     `).join("");
 }
 
+// ==== RESET ====
 function resetAll() {
     if (!canPress()) return;
     if (!confirm("ล้างข้อมูลทั้งหมด?")) return;
