@@ -24,6 +24,14 @@
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
 <style>
+    html {
+    touch-action: manipulation;
+}
+
+body {
+    -webkit-touch-callout: none;
+}
+
 html, body {
     width: 390px;
     max-width: 390px;
@@ -167,6 +175,31 @@ let lapCount = 0;
 let lapsData = [];
 
 let lastPress = 0;
+// ==== FIX iOS PRESS EFFECT ====
+function addPressEffect(el) {
+    el.addEventListener("touchstart", () => {
+        el.style.transform = "scale(0.95)";
+    }, { passive: true });
+
+    el.addEventListener("touchend", () => {
+        el.style.transform = "scale(1)";
+    });
+
+    el.addEventListener("touchcancel", () => {
+        el.style.transform = "scale(1)";
+    });
+
+    el.addEventListener("mousedown", () => {
+        el.style.transform = "scale(0.95)";
+    });
+
+    el.addEventListener("mouseup", () => {
+        el.style.transform = "scale(1)";
+    });
+}
+
+document.querySelectorAll("button").forEach(addPressEffect);
+
 function canPress() {
     const now = Date.now();
     if (now - lastPress < 400) return false;
