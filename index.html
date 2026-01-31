@@ -4,20 +4,33 @@
 <meta charset="utf-8">
 <title>Running Timer</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=390, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <style>
+html, body {
+    width: 390px;
+    max-width: 390px;
+    overflow-x: hidden;
+}
+
+* { box-sizing: border-box; }
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     background: #0f172a;
     color: white;
-    margin: 0;
-    padding: 12px;
+    margin: 0 auto;
+    padding: 10px;
 }
 
-.container {
-    max-width: 420px;
-    margin: auto;
+button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.08s ease;
+}
+
+button:active {
+    transform: scale(0.95);
 }
 
 .time {
@@ -27,18 +40,61 @@ body {
     font-weight: bold;
 }
 
+.row {
+    display: flex;
+    gap: 8px;
+}
+
 .btn {
     width: 100%;
     padding: 16px;
     margin: 6px 0;
     font-size: 20px;
     border-radius: 12px;
+    color: #ffffff;
     border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.start { background: #22c55e; color: white; }
-.stop  { background: #ef4444; color: white; }
-.lap   { background: #3b82f6; color: white; }
+.start { background: #22c55e; }
+.stop  { background: #ef4444; }
+.reset { background: #64748b; }
+
+.lap-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    font-size: 30px;
+    margin: 16px auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lap-item {
+    background: #1e293b;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 6px 0;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lap-pace {
+    font-size: 26px;
+    font-weight: bold;
+    color: #38bdf8;
+    text-align: right;
+}
 
 input {
     width: 100%;
@@ -48,33 +104,29 @@ input {
     border: none;
     margin-bottom: 8px;
 }
-
-.lap-item {
-    background: #1e293b;
-    padding: 10px;
-    border-radius: 10px;
-    margin: 6px 0;
-}
 </style>
 </head>
 
 <body>
-<div class="container">
 
 <h2>🏃 Timer ซ้อมวิ่ง</h2>
 
-<input id="distance" placeholder="ระยะทางต่อรอบ (กม.) เช่น 0.4">
+<!-- 👇 เปลี่ยนเป็นเมตร -->
+<input id="distance" placeholder="ระยะทางต่อรอบ (เมตร) เช่น 400">
 
 <div class="time" id="display">00:00.00</div>
 
-<button class="btn start" onclick="start()">▶ เริ่ม</button>
-<button class="btn stop" onclick="stop()">⏸ หยุด</button>
-<button class="btn lap" onclick="lap()">🏁 นับรอบ</button>
+<div class="row">
+    <button class="btn start" onclick="start()">▶ เริ่ม</button>
+    <button class="btn stop" onclick="stop()">⏸ หยุด</button>
+    <button class="btn reset" onclick="resetAll()">รีเซ็ต</button>
+</div>
+
+<button class="lap-circle" onclick="lap()">นับรอบ</button>
+
 
 <h3>รอบที่วิ่ง</h3>
 <div id="laps"></div>
-
-</div>
 
 <script>
 let startTime = 0;
@@ -82,7 +134,57 @@ let elapsed = 0;
 let timer;
 let running = false;
 let lastLapTime = 0;
+let lapCount = 0;
+let lapsData = [];
 
+/* กันกดซ้ำ */
+let lastPress = 0;
+function canPress() {
+    const now = Date.now();
+    if (now - lastPress < 400) return false;
+    lastPress = now;
+    return true;
+}
+
+/* STORAGE */
+function save() {
+    const data = {
+        elapsed,
+        lastLapTime,
+        lapCount,
+        lapsData,
+        distance: distance.value,
+        running
+    };
+    localStorage.setItem("runTimer", JSON.stringify(data));
+}
+
+function load() {
+    const txt = localStorage.getItem("runTimer");
+    if (!txt) return;
+
+    try {
+        const d = JSON.parse(txt);
+
+        elapsed = d.elapsed || 0;
+        lastLapTime = d.lastLapTime || 0;
+        lapCount = d.lapCount || 0;
+        lapsData = d.lapsData || [];
+        distance.value = d.distance || "";
+
+        renderLaps();
+        display.innerText = format(elapsed);
+
+        if (d.running) {
+            running = true;
+            startTime = Date.now() - elapsed;
+            timer = setInterval(update, 30);
+        }
+
+    } catch(e) {}
+}
+
+/* UTIL */
 function format(t) {
     let ms = Math.floor((t % 1000) / 10);
     let s = Math.floor(t / 1000) % 60;
@@ -95,53 +197,113 @@ function format(t) {
     );
 }
 
-function update() {
-    elapsed = Date.now() - startTime;
-    display.innerText = format(elapsed);
+function vibrate() {
+    if ("vibrate" in navigator) navigator.vibrate(40);
 }
 
-function start() {
-    if (running) return;
+/* 👇 แก้สูตรให้รับ "เมตร" */
+function calcPace(timeMs, meter) {
+    if (!meter || meter <= 0) return "-";
 
-    running = true;
-    startTime = Date.now() - elapsed;
-    timer = setInterval(update, 30);
-}
-
-function stop() {
-    running = false;
-    clearInterval(timer);
-}
-
-function calcPace(timeMs, km) {
-    if (!km || km <= 0) return "-";
-
+    const km = meter / 1000;          // แปลงเป็นกิโล
     let sec = timeMs / 1000;
     let paceSec = sec / km;
 
     let m = Math.floor(paceSec / 60);
     let s = Math.floor(paceSec % 60);
 
-    return m + ":" + String(s).padStart(2,'0') + " /km";
+    return m + ":" + String(s).padStart(2,'0');
+}
+
+function update() {
+    elapsed = Date.now() - startTime;
+    display.innerText = format(elapsed);
+    save();
+}
+
+function start() {
+    if (!canPress() || running) return;
+
+    running = true;
+    startTime = Date.now() - elapsed;
+    timer = setInterval(update, 30);
+    save();
+}
+
+function stop() {
+    if (!canPress()) return;
+
+    running = false;
+    clearInterval(timer);
+    save();
 }
 
 function lap() {
-    let dist = parseFloat(distance.value);
+    if (!canPress()) return;
+
+    vibrate();
+
+    /* 👇 รับเป็นเมตร */
+    let distMeter = parseFloat(distance.value);
 
     let lapTime = elapsed - lastLapTime;
+
     lastLapTime = elapsed;
+    lapCount++;
 
-    let pace = calcPace(lapTime, dist);
+    let pace = calcPace(lapTime, distMeter);
 
-    let div = document.createElement("div");
-    div.className = "lap-item";
+    const item = {
+        no: lapCount,
+        lapTime,
+        total: elapsed,
+        pace
+    };
 
-    div.innerHTML =
-        "⏱ " + format(lapTime) +
-        "<br>⚡ เพซ: " + pace;
+    lapsData.unshift(item);
 
-    laps.prepend(div);
+    renderLaps();
+    save();
 }
+
+function renderLaps() {
+    laps.innerHTML = lapsData.map(i => `
+        <div class="lap-item">
+            <div>
+                <b>รอบที่ ${i.no}</b><br>
+                ⏱ ${format(i.lapTime)}<br>
+                🕒 ${format(i.total)}
+            </div>
+
+            <div class="lap-pace">
+                ⚡ ${i.pace}<br>
+                <span style="font-size:14px">/km</span>
+            </div>
+        </div>
+    `).join("");
+}
+
+function resetAll() {
+    if (!canPress()) return;
+    if (!confirm("ล้างข้อมูลทั้งหมด?")) return;
+
+    clearInterval(timer);
+
+    startTime = 0;
+    elapsed = 0;
+    running = false;
+    lastLapTime = 0;
+    lapCount = 0;
+    lapsData = [];
+
+    display.innerText = "00:00.00";
+    laps.innerHTML = "";
+
+    localStorage.removeItem("runTimer");
+}
+
+load();
+window.addEventListener("beforeunload", save);
 </script>
 
 </body>
