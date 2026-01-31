@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Running Timer</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0f172a;
+    color: white;
+    margin: 0;
+    padding: 12px;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+}
+
+.time {
+    font-size: 56px;
+    text-align: center;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    margin: 6px 0;
+    font-size: 20px;
+    border-radius: 12px;
+    border: none;
+}
+
+.start { background: #22c55e; color: white; }
+.stop  { background: #ef4444; color: white; }
+.lap   { background: #3b82f6; color: white; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 8px;
+}
+
+.lap-item {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 6px 0;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>🏃 Timer ซ้อมวิ่ง</h2>
+
+<input id="distance" placeholder="ระยะทางต่อรอบ (กม.) เช่น 0.4">
+
+<div class="time" id="display">00:00.00</div>
+
+<button class="btn start" onclick="start()">▶ เริ่ม</button>
+<button class="btn stop" onclick="stop()">⏸ หยุด</button>
+<button class="btn lap" onclick="lap()">🏁 นับรอบ</button>
+
+<h3>รอบที่วิ่ง</h3>
+<div id="laps"></div>
+
+</div>
+
+<script>
+let startTime = 0;
+let elapsed = 0;
+let timer;
+let running = false;
+let lastLapTime = 0;
+
+function format(t) {
+    let ms = Math.floor((t % 1000) / 10);
+    let s = Math.floor(t / 1000) % 60;
+    let m = Math.floor(t / 60000);
+
+    return (
+        String(m).padStart(2,'0') + ":" +
+        String(s).padStart(2,'0') + "." +
+        String(ms).padStart(2,'0')
+    );
+}
+
+function update() {
+    elapsed = Date.now() - startTime;
+    display.innerText = format(elapsed);
+}
+
+function start() {
+    if (running) return;
+
+    running = true;
+    startTime = Date.now() - elapsed;
+    timer = setInterval(update, 30);
+}
+
+function stop() {
+    running = false;
+    clearInterval(timer);
+}
+
+function calcPace(timeMs, km) {
+    if (!km || km <= 0) return "-";
+
+    let sec = timeMs / 1000;
+    let paceSec = sec / km;
+
+    let m = Math.floor(paceSec / 60);
+    let s = Math.floor(paceSec % 60);
+
+    return m + ":" + String(s).padStart(2,'0') + " /km";
+}
+
+function lap() {
+    let dist = parseFloat(distance.value);
+
+    let lapTime = elapsed - lastLapTime;
+    lastLapTime = elapsed;
+
+    let pace = calcPace(lapTime, dist);
+
+    let div = document.createElement("div");
+    div.className = "lap-item";
+
+    div.innerHTML =
+        "⏱ " + format(lapTime) +
+        "<br>⚡ เพซ: " + pace;
+
+    laps.prepend(div);
+}
+</script>
+
+</body>
+</html>
