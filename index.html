@@ -5,6 +5,19 @@
 <title>Running Timer</title>
 
 <meta name="viewport" content="width=390, initial-scale=1, maximum-scale=1, user-scalable=no">
+<!-- ===== App Icon ===== -->
+<link rel="icon" type="image/png" sizes="512x512" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+
+<!-- สำหรับ Add to Home Screen iPhone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Run Timer">
+
+<!-- Open Graph เวลาแชร์ลิงก์ -->
+<meta property="og:title" content="Run Timer">
+<meta property="og:image" content="icon.png">
+<meta property="og:type" content="website">
 
 <!-- Font Awesome -->
 <link rel="stylesheet"
@@ -123,10 +136,6 @@ input {
 <div class="time" id="display">00:00.00</div>
 
 <div class="row">
-    <button class="btn start" onclick="start()">
-        <i class="fa-solid fa-play"></i> เริ่ม
-    </button>
-
     <button class="btn stop" onclick="stop()">
         <i class="fa-solid fa-pause"></i> หยุด
     </button>
@@ -134,6 +143,11 @@ input {
     <button class="btn reset" onclick="resetAll()">
         <i class="fa-solid fa-rotate"></i> รีเซ็ต
     </button>
+    <button class="btn start" onclick="start()">
+        <i class="fa-solid fa-play"></i> เริ่ม
+    </button>
+
+
 </div>
 
 <button class="lap-circle" onclick="lap()">
